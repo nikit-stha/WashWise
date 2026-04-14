@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block title %}My Deposits{% endblock %}
+{% block page_heading %}My deposits{% endblock %}
+
+{% block content %}
+<section class="page-hero small-hero">
+    <div>
+        <span class="section-pill">Order history</span>
+        <h2>Track all of your laundry deposits.</h2>
+        <p>Open any deposit to see details, clothing items, and the latest progress.</p>
+    </div>
+</section>
+
+<div class="table-card">
+    {% if deposits %}
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>SN</th>
+                    <th>Status</th>
+                    <th>Created</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for deposit in deposits %}
+                    <tr>
+                        <td>{{ loop.index }}</td>
+                        <td><span class="inline-badge">{{ deposit.status }}</span></td>
+                        <td>{{ deposit.created_at.strftime('%Y-%m-%d') if deposit.created_at else 'N/A' }}</td>
+                        <td><a class="btn btn-small" href="{{ url_for('view_deposit', deposit_id=deposit.id) }}">Open</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <div class="empty-state-box">
+            <h3>No deposits yet</h3>
+            <p>Your submitted laundry requests will appear here.</p>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

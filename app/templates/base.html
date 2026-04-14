@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}WashWise{% endblock %}</title>
+    <meta name="theme-color" content="#2457ff">
+    <link rel="icon" type="image/svg+xml" href="{{ static_asset_url('img/favicon.svg') }}">
+    <link rel="shortcut icon" href="{{ static_asset_url('img/favicon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ static_asset_url('img/apple-touch-icon.svg') }}">
+    <link rel="stylesheet" href="{{ static_asset_url('css/style.css') }}">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+    <div class="app-shell">
+        <aside class="sidebar">
+            <div class="sidebar-top">
+                <a href="{{ url_for('index') }}" class="brand-block">
+                    <span class="brand-mark">W</span>
+                    <div>
+                        <strong>WashWise</strong>
+                        <small>Smart laundry management</small>
+                    </div>
+                </a>
+
+                <button class="theme-toggle" type="button" data-theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode">
+                    <span class="theme-toggle-icon" aria-hidden="true">🌙</span>
+                    <span class="theme-toggle-label">Theme</span>
+                </button>
+            </div>
+
+            <nav class="sidebar-nav">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.__class__.__name__ == "User" %}
+                        <a href="{{ url_for('user_dashboard') }}" class="nav-item {% if request.endpoint == 'user_dashboard' %}is-active{% endif %}">
+                            <span class="nav-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            </span>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="{{ url_for('create_deposit_route') }}" class="nav-item {% if request.endpoint == 'create_deposit_route' %}is-active{% endif %}">
+                            <span class="nav-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/><rect x="4" y="4" width="16" height="16" rx="3"/></svg>
+                            </span>
+                            <span>New Deposit</span>
+                        </a>
+                        <a href="{{ url_for('my_deposits') }}" class="nav-item {% if request.endpoint in ['my_deposits', 'view_deposit'] %}is-active{% endif %}">
+                            <span class="nav-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M8 7h8"/><path d="M8 12h8"/><path d="M8 17h5"/><rect x="5" y="3" width="14" height="18" rx="2"/></svg>
+                            </span>
+                            <span>Deposits</span>
+                        </a>
+                        <a href="{{ url_for('user_wardrobe') }}" class="nav-item {% if request.endpoint == 'user_wardrobe' %}is-active{% endif %}">
+                            <span class="nav-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M9 4h6l1 3 3 2v10H5V9l3-2 1-3Z"/></svg>
+                            </span>
+                            <span>Wardrobe</span>
+                        </a>
+                    {% elif current_user.__class__.__name__ == "Staff" %}
+                        <a href="{{ url_for('staff_dashboard') }}" class="nav-item {% if request.endpoint == 'staff_dashboard' %}is-active{% endif %}">
+                            <span class="nav-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="14" width="7" height="7"/></svg>
+                            </span>
+                            <span>Dashboard</span>
+                        </a>
+                        <a href="{{ url_for('staff_deposits') }}" class="nav-item {% if request.endpoint in ['staff_deposits', 'view_deposit'] %}is-active{% endif %}">
+                            <span class="nav-icon" aria-hidden="true">
+                                <svg viewBox="0 0 24 24"><path d="M8 7h8"/><path d="M8 12h8"/><path d="M8 17h5"/><rect x="5" y="3" width="14" height="18" rx="2"/></svg>
+                            </span>
+                            <span>All Deposits</span>
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </nav>
+        </aside>
+
+        <div class="main-panel">
+            <header class="topbar">
+                <a href="{{ url_for('index') }}" class="topbar-brand" aria-label="Go to homepage">
+                    <img src="{{ static_asset_url('img/favicon.svg') }}" alt="WashWise" class="topbar-brand-logo">
+                    <span class="topbar-brand-text">WashWise</span>
+                </a>
+                <div class="topbar-actions">
+                    {% if current_user.is_authenticated %}
+                        {% if current_user.__class__.__name__ == "User" %}
+                    <a href="{{ url_for('user_profile') }}" class="topbar-account topbar-account-link">
+                        <span class="topbar-account-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+                        </span>
+                        <div>
+                            <strong>
+                                {% if current_user.full_name is defined and current_user.full_name %}
+                                    {{ current_user.full_name.split()[0] }}
+                                {% elif current_user.name is defined and current_user.name %}
+                                    {{ current_user.name.split()[0] }}
+                                {% elif current_user.username is defined and current_user.username %}
+                                    {{ current_user.username.split()[0] }}
+                                {% elif current_user.email is defined and current_user.email %}
+                                    {{ current_user.email.split('@')[0] }}
+                                {% else %}
+                                    WashWise User
+                                {% endif %}
+                            </strong>
+                        </div>
+                    </a>
+                        {% else %}
+                    <a href="{{ url_for('staff_profile') }}" class="topbar-account topbar-account-link">
+                        <span class="topbar-account-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+                        </span>
+                        <div>
+                            <strong>
+                                {% if current_user.name is defined and current_user.name %}
+                                    {{ current_user.name.split()[0] }}
+                                {% elif current_user.full_name is defined and current_user.full_name %}
+                                    {{ current_user.full_name.split()[0] }}
+                                {% elif current_user.username is defined and current_user.username %}
+                                    {{ current_user.username.split()[0] }}
+                                {% elif current_user.email is defined and current_user.email %}
+                                    {{ current_user.email.split('@')[0] }}
+                                {% else %}
+                                    Staff
+                                {% endif %}
+                            </strong>
+                            <span>Staff</span>
+                        </div>
+                    </a>
+                        {% endif %}
+                    {% else %}
+                    <a href="{{ url_for('user_login') }}" class="btn btn-primary topbar-login-btn">Login</a>
+                    {% endif %}
+                    <button class="theme-toggle theme-toggle-compact" type="button" data-theme-toggle aria-label="Toggle dark mode" title="Toggle dark mode">
+                        <span class="theme-toggle-icon" aria-hidden="true">🌙</span>
+                    </button>
+                </div>
+            </header>
+
+            <main class="page-content">
+                {% with messages = get_flashed_messages() %}
+                    {% if messages %}
+                        <div class="flash-wrapper">
+                            {% for message in messages %}
+                                <div class="flash-message">{{ message }}</div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                {% endwith %}
+
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <nav class="mobile-nav">
+        {% if current_user.is_authenticated %}
+            {% if current_user.__class__.__name__ == "User" %}
+                <a href="{{ url_for('user_dashboard') }}" class="mobile-nav-item {% if request.endpoint == 'user_dashboard' %}is-active{% endif %}">
+                    <span class="mobile-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    </span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('create_deposit_route') }}" class="mobile-nav-item {% if request.endpoint == 'create_deposit_route' %}is-active{% endif %}">
+                    <span class="mobile-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/><rect x="4" y="4" width="16" height="16" rx="3"/></svg>
+                    </span>
+                    <span>Deposit</span>
+                </a>
+                <a href="{{ url_for('my_deposits') }}" class="mobile-nav-item {% if request.endpoint in ['my_deposits', 'view_deposit'] %}is-active{% endif %}">
+                    <span class="mobile-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M8 7h8"/><path d="M8 12h8"/><path d="M8 17h5"/><rect x="5" y="3" width="14" height="18" rx="2"/></svg>
+                    </span>
+                    <span>Orders</span>
+                </a>
+                <a href="{{ url_for('user_wardrobe') }}" class="mobile-nav-item {% if request.endpoint == 'user_wardrobe' %}is-active{% endif %}">
+                    <span class="mobile-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M9 4h6l1 3 3 2v10H5V9l3-2 1-3Z"/></svg>
+                    </span>
+                    <span>Wardrobe</span>
+                </a>
+            {% elif current_user.__class__.__name__ == "Staff" %}
+                <a href="{{ url_for('staff_dashboard') }}" class="mobile-nav-item {% if request.endpoint == 'staff_dashboard' %}is-active{% endif %}">
+                    <span class="mobile-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="5"/><rect x="14" y="12" width="7" height="9"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    </span>
+                    <span>Dashboard</span>
+                </a>
+                <a href="{{ url_for('staff_deposits') }}" class="mobile-nav-item {% if request.endpoint in ['staff_deposits', 'view_deposit'] %}is-active{% endif %}">
+                    <span class="mobile-nav-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24"><path d="M8 7h8"/><path d="M8 12h8"/><path d="M8 17h5"/><rect x="5" y="3" width="14" height="18" rx="2"/></svg>
+                    </span>
+                    <span>Deposits</span>
+                </a>
+            {% endif %}
+        {% endif %}
+    </nav>
+
+    <script>
+        (function () {
+            const savedTheme = localStorage.getItem('washwise-theme');
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+        })();
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const toggleButtons = document.querySelectorAll('[data-theme-toggle]');
+
+            function updateThemeButtons() {
+                const isDark = document.body.classList.contains('dark-mode');
+                toggleButtons.forEach(function (button) {
+                    const icon = button.querySelector('.theme-toggle-icon');
+                    const label = button.querySelector('.theme-toggle-label');
+                    if (icon) {
+                        icon.textContent = isDark ? '☀️' : '🌙';
+                    }
+                    if (label) {
+                        label.textContent = isDark ? 'Light' : 'Dark';
+                    }
+                    button.setAttribute('aria-label', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+                    button.setAttribute('title', isDark ? 'Switch to light mode' : 'Switch to dark mode');
+                });
+            }
+
+            updateThemeButtons();
+
+            toggleButtons.forEach(function (button) {
+                button.addEventListener('click', function () {
+                    document.body.classList.toggle('dark-mode');
+                    localStorage.setItem('washwise-theme', document.body.classList.contains('dark-mode') ? 'dark' : 'light');
+                    updateThemeButtons();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

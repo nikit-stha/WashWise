@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block title %}Create Deposit{% endblock %}
+{% block page_heading %}Create deposit{% endblock %}
+
+{% block content %}
+
+<div class="form-card large-card">
+    <h1>Deposit from Wardrobe</h1>
+    <span class="section-pill">New laundry request</span><br><br>
+    <p class="section-text">You can select up to 10 wardrobe items in one deposit.</p>
+
+    {% if settings and not settings.deposit_enabled %}
+        <div class="flash-message flash-warning">
+            Deposits are currently closed. Please wait for staff to enable them.
+        </div>
+    {% endif %}
+
+    <form method="POST" enctype="multipart/form-data">
+        <div class="deposit-section">
+            <div class="section-header">
+                <h3>Select from wardrobe</h3>
+                <span class="inline-badge" id="selectedClothesCount">0 selected</span>
+            </div>
+
+            {% if wardrobe_items %}
+                <div class="wardrobe-grid">
+                    {% for item in wardrobe_items %}
+                        <label class="feature-card wardrobe-item-card selectable-wardrobe-card">
+                            <input
+                                type="checkbox"
+                                name="wardrobe_item_ids"
+                                value="{{ item.id }}"
+                                class="wardrobe-checkbox"
+                            >
+
+                            {% if item.image_filename %}
+                                <img
+                                    src="{{ url_for('static', filename='uploads/' ~ item.image_filename) }}"
+                                    alt="{{ item.name }}"
+                                    class="wardrobe-image"
+                                    loading="lazy"
+                                    decoding="async"
+                                >
+                            {% else %}
+                                <div class="wardrobe-image placeholder-image">No image</div>
+                            {% endif %}
+
+                            <div class="wardrobe-item-body">
+                                <h4>{{ item.name }}</h4>
+                                <p>Tap to select</p>
+                            </div>
+                        </label>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="feature-card empty-state-box">
+                    <h3>No wardrobe items yet</h3>
+                    <p>You do not have any wardrobe items yet.</p>
+                    <a class="btn btn-primary" href="{{ url_for('user_wardrobe') }}">Open wardrobe</a>
+                </div>
+            {% endif %}
+        </div>
+
+        <button class="btn btn-primary full-width" type="submit">
+            Submit deposit
+        </button>
+    </form>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const checkboxes = document.querySelectorAll(".wardrobe-checkbox");
+    const selectedCount = document.getElementById("selectedClothesCount");
+
+    function totalSelected() {
+        return document.querySelectorAll(".wardrobe-checkbox:checked").length;
+    }
+
+    function updateSelectedCount() {
+        const count = totalSelected();
+        if (selectedCount) {
+            selectedCount.textContent = `${count} selected`;
+        }
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener("change", function () {
+            if (totalSelected() > 10) {
+                this.checked = false;
+                alert("Maximum 10 items allowed per deposit.");
+            }
+
+            updateSelectedCount();
+        });
+    });
+
+    updateSelectedCount();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,235 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard{% endblock %}
+{% block page_heading %}User dashboard{% endblock %}
+
+{% block content %}
+<div class="user-dashboard-page">
+    <section class="user-dashboard-panel user-dashboard-top-panel">
+        <div class="user-dashboard-panel-header user-dashboard-header-with-actions">
+            <div>
+                <h2 class="user-dashboard-panel-title">Quick Actions</h2>
+                <p class="user-dashboard-panel-subtitle">Common tasks and actions</p>
+            </div>
+
+            <div
+                class="notification-widget"
+                data-notification-widget
+                data-notifications-url="{{ url_for('user_notifications') }}"
+            >
+                <button
+                    class="notification-button"
+                    type="button"
+                    data-notification-toggle
+                    aria-label="Open notifications"
+                    aria-expanded="false"
+                >
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9"/>
+                        <path d="M10 21h4"/>
+                    </svg>
+                    <span
+                        class="notification-count {% if not notifications %}is-empty{% endif %}"
+                        data-notification-count
+                    >
+                        {{ notifications|length }}
+                    </span>
+                </button>
+
+                <div class="notification-menu" data-notification-menu>
+                    <div class="notification-menu-header">
+                        <strong>Notifications</strong>
+                        <small data-notification-summary>
+                            {{ notifications|length }} active
+                        </small>
+                    </div>
+
+                    <div class="notification-list" data-notification-list>
+                        {% if notifications %}
+                            {% for notification in notifications %}
+                                <a
+                                    class="notification-item notification-item-{{ notification.tone }}"
+                                    href="{{ notification.url }}"
+                                >
+                                    <span class="notification-dot" aria-hidden="true"></span>
+                                    <span>
+                                        <strong>{{ notification.title }}</strong>
+                                        <small>{{ notification.message }}</small>
+                                    </span>
+                                </a>
+                            {% endfor %}
+                        {% else %}
+                            <div class="notification-empty">No new notifications</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <section class="user-dashboard-actions">
+            <a class="user-dashboard-action-card is-primary" href="{{ url_for('create_deposit_route') }}">
+                <span class="user-dashboard-action-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                </span>
+                <h3>New Deposit</h3>
+            </a>
+
+            <a class="user-dashboard-action-card" href="{{ url_for('user_wardrobe') }}">
+                <span class="user-dashboard-action-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M9 4h6l1 3 3 2v10H5V9l3-2 1-3Z"/></svg>
+                </span>
+                <h3>Manage Wardrobe</h3>
+            </a>
+
+            <a class="user-dashboard-action-card" href="{{ url_for('my_deposits') }}">
+                <span class="user-dashboard-action-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M7 7h10v10H7z"/><path d="M10 10h4v4h-4z"/></svg>
+                </span>
+                <h3>View Status</h3>
+            </a>
+        </section>
+    </section>
+
+    <section class="user-dashboard-panel">
+        <div class="user-dashboard-panel-header">
+            <h2 class="user-dashboard-panel-title">Active Deposits</h2>
+            <p class="user-dashboard-panel-subtitle">Your current laundry requests</p>
+        </div>
+
+        {% if active_deposits %}
+            <div class="user-dashboard-deposit-list">
+                {% for deposit in active_deposits %}
+                    <a class="user-dashboard-deposit-card" href="{{ url_for('view_deposit', deposit_id=deposit.id) }}">
+                        <div class="user-dashboard-deposit-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+                        </div>
+
+                        <div class="user-dashboard-deposit-copy">
+                            <h3>
+                                {{ deposit.service.item_count if deposit.service else deposit.items|length }} item{% if (deposit.service.item_count if deposit.service else deposit.items|length) != 1 %}s{% endif %}
+                                • {{ deposit.status|lower }}
+                            </h3>
+                            <p>Est. {{ deposit.created_at.strftime('%d/%m/%Y') if deposit.created_at else 'N/A' }}</p>
+                        </div>
+
+                        <div class="user-dashboard-deposit-status">{{ deposit.status }}</div>
+                    </a>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="user-dashboard-empty-state">
+                <h3>No active deposits</h3>
+                <p>Your current laundry requests will appear here.</p>
+            </div>
+        {% endif %}
+    </section>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const widget = document.querySelector("[data-notification-widget]");
+    if (!widget) return;
+
+    const toggleButton = widget.querySelector("[data-notification-toggle]");
+    const menu = widget.querySelector("[data-notification-menu]");
+    const list = widget.querySelector("[data-notification-list]");
+    const countBadge = widget.querySelector("[data-notification-count]");
+    const summary = widget.querySelector("[data-notification-summary]");
+    const notificationsUrl = widget.dataset.notificationsUrl;
+    let previousSignature = JSON.stringify({{ notifications|tojson }});
+
+    function setMenuOpen(isOpen) {
+        widget.classList.toggle("is-open", isOpen);
+        toggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+
+    function createNotificationItem(notification) {
+        const item = document.createElement("a");
+        item.className = `notification-item notification-item-${notification.tone || "info"}`;
+        item.href = notification.url || "#";
+
+        const dot = document.createElement("span");
+        dot.className = "notification-dot";
+        dot.setAttribute("aria-hidden", "true");
+
+        const copy = document.createElement("span");
+        const title = document.createElement("strong");
+        const message = document.createElement("small");
+
+        title.textContent = notification.title || "Notification";
+        message.textContent = notification.message || "";
+
+        copy.append(title, message);
+        item.append(dot, copy);
+
+        return item;
+    }
+
+    function updateNotifications(notifications) {
+        const safeNotifications = Array.isArray(notifications) ? notifications : [];
+        const nextSignature = JSON.stringify(safeNotifications);
+        const hasChanged = nextSignature !== previousSignature;
+
+        countBadge.textContent = safeNotifications.length;
+        countBadge.classList.toggle("is-empty", safeNotifications.length === 0);
+        summary.textContent = `${safeNotifications.length} active`;
+
+        list.replaceChildren();
+        if (safeNotifications.length === 0) {
+            const emptyState = document.createElement("div");
+            emptyState.className = "notification-empty";
+            emptyState.textContent = "No new notifications";
+            list.append(emptyState);
+        } else {
+            safeNotifications.forEach(function (notification) {
+                list.append(createNotificationItem(notification));
+            });
+        }
+
+        if (hasChanged && safeNotifications.length > 0) {
+            widget.classList.add("has-new");
+            window.setTimeout(function () {
+                widget.classList.remove("has-new");
+            }, 1800);
+        }
+
+        previousSignature = nextSignature;
+    }
+
+    async function refreshNotifications() {
+        if (!notificationsUrl) return;
+
+        try {
+            const response = await fetch(notificationsUrl, {
+                headers: { "Accept": "application/json" },
+            });
+
+            if (!response.ok) return;
+
+            const data = await response.json();
+            updateNotifications(data.notifications);
+        } catch (error) {
+            return;
+        }
+    }
+
+    toggleButton.addEventListener("click", function () {
+        setMenuOpen(!widget.classList.contains("is-open"));
+    });
+
+    document.addEventListener("click", function (event) {
+        if (!widget.contains(event.target)) {
+            setMenuOpen(false);
+        }
+    });
+
+    document.addEventListener("keydown", function (event) {
+        if (event.key === "Escape") {
+            setMenuOpen(false);
+        }
+    });
+
+    window.setInterval(refreshNotifications, 15000);
+});
+</script>
+{% endblock %}

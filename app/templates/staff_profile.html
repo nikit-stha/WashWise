@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Profile{% endblock %}
+{% block page_heading %}Staff profile{% endblock %}
+
+{% block content %}
+<section class="detail-card profile-card">
+    <div class="detail-header">
+        <div>
+            <h1>&nbsp;{{ staff.name }}</h1>
+        </div>
+        <span class="status-badge">Staff</span>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-box">
+            <h3>Personal details</h3>
+            <p><strong>Name:</strong> {{ staff.name }}</p>
+            <p><strong>Email:</strong> {{ staff.email }}</p>
+        </div>
+        <div class="detail-box">
+            <h3>Account details</h3>
+            <p><strong>Role:</strong> Laundry staff</p>
+            <p><strong>Staff ID:</strong> {{ staff.id }}</p>
+        </div>
+    </div>
+
+    <div class="profile-actions">
+        <a href="{{ url_for('staff_logout') }}" class="btn btn-danger">Logout</a>
+    </div>
+</section>
+{% endblock %}

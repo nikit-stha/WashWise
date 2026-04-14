@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Deposit{% endblock %}
+{% block page_heading %}Edit deposit{% endblock %}
+
+{% block content %}
+<div class="form-card large-card">
+    <h1>Edit Deposit #{{ deposit.id }}</h1>
+    <span class="section-pill">Status: {{ deposit.status }}</span><br><br>
+    <p class="section-text">You can change the selected clothes only while this deposit is still marked as Not Given.</p>
+    <p class="section-text">If you remove every item and save, this deposit will be deleted.</p>
+
+    <form method="POST" id="edit-deposit-form">
+        <div class="deposit-section">
+            <div class="section-header">
+                <h3>Select clothes for this deposit</h3>
+                <span class="inline-badge" id="selectedClothesCount">0 selected</span>
+            </div>
+
+            {% if wardrobe_items %}
+                <div class="wardrobe-grid">
+                    {% for item in wardrobe_items %}
+                        <label class="feature-card wardrobe-item-card selectable-wardrobe-card">
+                            <input
+                                type="checkbox"
+                                name="wardrobe_item_ids"
+                                value="{{ item.id }}"
+                                class="wardrobe-checkbox"
+                                {% if item.id in selected_item_ids %}checked{% endif %}
+                            >
+
+                            {% if item.image_filename %}
+                                <img
+                                    src="{{ url_for('static', filename='uploads/' ~ item.image_filename) }}"
+                                    alt="{{ item.name }}"
+                                    class="wardrobe-image"
+                                    loading="lazy"
+                                    decoding="async"
+                                >
+                            {% else %}
+                                <div class="wardrobe-image placeholder-image">No image</div>
+                            {% endif %}
+
+                            <div class="wardrobe-item-body">
+                                <h4>{{ item.name }}</h4>
+                                <p>Tap to select</p>
+                            </div>
+                        </label>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="feature-card empty-state-box">
+                    <h3>No wardrobe items yet</h3>
+                    <p>Add clothes to your wardrobe first, then come back to edit this deposit.</p>
+                    <a class="btn btn-primary" href="{{ url_for('user_wardrobe') }}">Open wardrobe</a>
+                </div>
+            {% endif %}
+        </div>
+    </form>
+
+    <div class="action-section deposit-edit-footer">
+        <div class="deposit-edit-main-actions">
+            <button class="btn btn-primary" type="submit" form="edit-deposit-form">Save changes</button>
+            <a class="btn btn-secondary" href="{{ url_for('view_deposit', deposit_id=deposit.id) }}">Cancel</a>
+        </div>
+
+        <form method="POST" action="{{ url_for('delete_deposit_route', deposit_id=deposit.id) }}" onsubmit="return confirm('Remove this deposit? This cannot be undone.');">
+            <button class="btn btn-danger" type="submit">Remove deposit</button>
+        </form>
+    </div>
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const checkboxes = document.querySelectorAll(".wardrobe-checkbox");
+    const selectedCount = document.getElementById("selectedClothesCount");
+
+    function totalSelected() {
+        return document.querySelectorAll(".wardrobe-checkbox:checked").length;
+    }
+
+    function updateSelectedCount() {
+        const count = totalSelected();
+        if (selectedCount) {
+            selectedCount.textContent = `${count} selected`;
+        }
+    }
+
+    checkboxes.forEach(cb => {
+        cb.addEventListener("change", function () {
+            if (totalSelected() > 10) {
+                this.checked = false;
+                alert("Maximum 10 items allowed per deposit.");
+            }
+
+            updateSelectedCount();
+        });
+    });
+
+    updateSelectedCount();
+});
+</script>
+{% endblock %}

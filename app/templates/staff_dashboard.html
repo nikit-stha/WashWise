@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Dashboard{% endblock %}
+{% block page_heading %}Staff dashboard{% endblock %}
+
+{% block content %}
+<div class="user-dashboard-page staff-dashboard-page">
+    <section class="user-dashboard-panel">
+        <div class="user-dashboard-panel-header">
+            <h2 class="user-dashboard-panel-title">Quick Actions</h2>
+            <p class="user-dashboard-panel-subtitle">Common staff actions and shortcuts</p>
+        </div>
+
+        <section class="user-dashboard-actions">
+            <a class="user-dashboard-action-card is-primary" href="{{ url_for('staff_deposits') }}">
+                <span class="user-dashboard-action-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><path d="M8 7h8"/><path d="M8 12h8"/><path d="M8 17h5"/><rect x="5" y="3" width="14" height="18" rx="2"/></svg>
+                </span>
+                <h3>Manage Deposits</h3>
+            </a>
+
+            <a class="user-dashboard-action-card" href="{{ url_for('staff_profile') }}">
+                <span class="user-dashboard-action-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M5 20a7 7 0 0 1 14 0"/></svg>
+                </span>
+                <h3>My Profile</h3>
+            </a>
+        </section>
+    </section>
+
+    <section class="user-dashboard-panel">
+        <div class="user-dashboard-panel-header">
+            <h2 class="user-dashboard-panel-title">Service Controls</h2>
+            <p class="user-dashboard-panel-subtitle">Open or close key parts of the laundry workflow</p>
+        </div>
+
+        <div class="staff-dashboard-control-grid">
+            <article class="staff-dashboard-control-card">
+                <div class="staff-dashboard-control-head">
+                    <div class="staff-dashboard-control-copy">
+                        <h3>Deposit Access</h3>
+                        <p>Current status: <strong>{{ "OPEN" if settings.deposit_enabled else "CLOSED" }}</strong></p>
+                    </div>
+                    <span class="staff-dashboard-state {% if settings.deposit_enabled %}is-open{% else %}is-closed{% endif %}">
+                        {{ "Open" if settings.deposit_enabled else "Closed" }}
+                    </span>
+                </div>
+
+                <form method="POST" action="{{ url_for('toggle_deposit_route') }}">
+                    <button type="submit" class="btn auth-submit-btn full-width">
+                        {{ "Disable Deposits" if settings.deposit_enabled else "Enable Deposits" }}
+                    </button>
+                </form>
+            </article>
+
+            <article class="staff-dashboard-control-card">
+                <div class="staff-dashboard-control-head">
+                    <div class="staff-dashboard-control-copy">
+                        <h3>Collection Access</h3>
+                        <p>Current status: <strong>{{ "OPEN" if settings.collection_enabled else "CLOSED" }}</strong></p>
+                    </div>
+                    <span class="staff-dashboard-state {% if settings.collection_enabled %}is-open{% else %}is-closed{% endif %}">
+                        {{ "Open" if settings.collection_enabled else "Closed" }}
+                    </span>
+                </div>
+
+                <form method="POST" action="{{ url_for('toggle_collection_route') }}">
+                    <button type="submit" class="btn auth-submit-btn full-width">
+                        {{ "Disable Collection" if settings.collection_enabled else "Enable Collection" }}
+                    </button>
+                </form>
+            </article>
+        </div>
+    </section>
+</div>
+{% endblock %}

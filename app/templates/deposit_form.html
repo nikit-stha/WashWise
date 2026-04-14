@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+
+{% block title %}New Deposit{% endblock %}
+
+{% block content %}
+<h1 class="mt-5">New Deposit</h1>
+
+<form method="POST" enctype="multipart/form-data">
+  <div id="clothing-items">
+    <div class="row mb-3 clothing-item">
+      <div class="col-md-5">
+        <label class="form-label">Description</label>
+        <input type="text" class="form-control" name="description[]" required>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label">Service</label>
+        <select class="form-select" name="service_detail_id[]" required>
+          <!-- You'll need to populate this with your services -->
+          <option value="1">Wash</option>
+          <option value="2">Dry Clean</option>
+        </select>
+      </div>
+      <div class="col-md-2 d-flex align-items-end">
+        <button type="button" class="btn btn-danger remove-item">Remove</button>
+      </div>
+    </div>
+  </div>
+
+  <label>Item 1:</label>
+<input type="text" name="description">
+<input type="file" name="image"><br><br>
+
+<label>Item 2:</label>
+<input type="text" name="description">
+<input type="file" name="image"><br><br>
+
+<label>Item 3:</label>
+<input type="text" name="description">
+<input type="file" name="image"><br><br>
+
+  <button type="button" id="add-item" class="btn btn-secondary">Add Another Item</button>
+  <button type="submit" class="btn btn-primary">Submit Deposit</button>
+</form>
+
+<script>
+  document.getElementById('add-item').addEventListener('click', function() {
+    var clothingItems = document.getElementById('clothing-items');
+    var newItem = clothingItems.children[0].cloneNode(true);
+    newItem.querySelector('input').value = '';
+    clothingItems.appendChild(newItem);
+  });
+
+  document.getElementById('clothing-items').addEventListener('click', function(e) {
+    if (e.target && e.target.classList.contains('remove-item')) {
+      e.target.closest('.clothing-item').remove();
+    }
+  });
+</script>
+{% endblock %}

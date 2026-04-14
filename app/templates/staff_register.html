@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}Staff Register{% endblock %}
+{% block body_class %}auth-screen-page{% endblock %}
+{% block page_heading %}Staff registration{% endblock %}
+
+{% block content %}
+<section class="auth-screen">
+    <div class="auth-card">
+        <div class="auth-card-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><path d="M9 4h6l1 3 3 2v10H5V9l3-2 1-3Z"/></svg>
+        </div>
+        <div class="auth-card-header">
+            <h1>Create Account</h1>
+            <p>Create a staff account for WashWise</p>
+        </div>
+
+        <div class="auth-role-tabs" role="tablist" aria-label="Account type">
+            <a href="{{ url_for('user_register') }}" class="auth-role-tab">User</a>
+            <a href="{{ url_for('staff_register') }}" class="auth-role-tab is-active" aria-current="page">Staff</a>
+        </div>
+
+        <form method="POST">
+            {{ form.hidden_tag() }}
+
+            <div class="form-group auth-form-group">
+                {{ form.name.label(class="auth-field-label") }}
+                {{ form.name(class="form-input auth-input", placeholder="Jane Doe") }}
+                {% for error in form.name.errors %}
+                    <small class="error-text">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <div class="form-group auth-form-group">
+                {{ form.email.label(class="auth-field-label") }}
+                {{ form.email(class="form-input auth-input", placeholder="staff@washwise.com") }}
+                {% for error in form.email.errors %}
+                    <small class="error-text">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <div class="form-group password-group auth-form-group">
+                {{ form.registration_key.label(class="auth-field-label") }}
+
+                <div class="password-wrapper">
+                    {{ form.registration_key(class="form-input auth-input password-input", id="staff-register-key-field", placeholder="Enter the staff access key") }}
+                    <button
+                        class="toggle-password"
+                        type="button"
+                        data-password-toggle
+                        data-target="staff-register-key-field"
+                        aria-label="Show key"
+                        aria-pressed="false"
+                    >
+                        <span class="toggle-password-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </span>
+                        <span class="toggle-password-text">Show</span>
+                    </button>
+                </div>
+
+                {% for error in form.registration_key.errors %}
+                    <small class="error-text">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <div class="form-group password-group auth-form-group">
+                {{ form.password.label(class="auth-field-label") }}
+
+                <div class="password-wrapper">
+                    {{ form.password(class="form-input auth-input password-input", id="staff-register-password-field", placeholder="Create a password") }}
+                    <button
+                        class="toggle-password"
+                        type="button"
+                        data-password-toggle
+                        data-target="staff-register-password-field"
+                        aria-label="Show password"
+                        aria-pressed="false"
+                    >
+                        <span class="toggle-password-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </span>
+                        <span class="toggle-password-text">Show</span>
+                    </button>
+                </div>
+
+                {% for error in form.password.errors %}
+                    <small class="error-text">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            <div class="form-group password-group auth-form-group">
+                {{ form.password2.label(class="auth-field-label") }}
+
+                <div class="password-wrapper">
+                    {{ form.password2(class="form-input auth-input password-input", id="staff-register-confirm-password-field", placeholder="Confirm your password") }}
+                    <button
+                        class="toggle-password"
+                        type="button"
+                        data-password-toggle
+                        data-target="staff-register-confirm-password-field"
+                        aria-label="Show password"
+                        aria-pressed="false"
+                    >
+                        <span class="toggle-password-icon" aria-hidden="true">
+                            <svg viewBox="0 0 24 24">
+                                <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6Z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                        </span>
+                        <span class="toggle-password-text">Show</span>
+                    </button>
+                </div>
+
+                {% for error in form.password2.errors %}
+                    <small class="error-text">{{ error }}</small>
+                {% endfor %}
+            </div>
+
+            {{ form.submit(class="btn auth-submit-btn full-width", value="Create Account") }}
+        </form>
+
+        <p class="auth-switch-link">
+            Already have an account?
+            <a href="{{ url_for('staff_login') }}">Sign In</a>
+        </p>
+    </div>
+</section>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    document.querySelectorAll("[data-password-toggle]").forEach(function (button) {
+        button.addEventListener("click", function () {
+            const targetId = button.getAttribute("data-target");
+            const passwordField = document.getElementById(targetId);
+            const label = button.querySelector(".toggle-password-text");
+
+            if (!passwordField || !label) return;
+
+            const isHidden = passwordField.type === "password";
+            passwordField.type = isHidden ? "text" : "password";
+            button.setAttribute("aria-pressed", isHidden ? "true" : "false");
+            button.setAttribute("aria-label", isHidden ? "Hide password" : "Show password");
+            label.textContent = isHidden ? "Hide" : "Show";
+        });
+    });
+});
+</script>
+{% endblock %}

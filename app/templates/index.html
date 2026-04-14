@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block title %}WashWise | Smart Hostel Laundry{% endblock %}
+{% block page_heading %}Smart hostel laundry{% endblock %}
+
+{% block content %}
+<section class="hero-panel homepage-hero">
+    <div class="homepage-mark" aria-hidden="true">
+        <img src="{{ static_asset_url('img/favicon.svg') }}" alt="" class="homepage-mark-icon">
+    </div>
+
+    <div class="hero-copy">
+        <h2>Smart laundry, kept simple.</h2>
+        <p>WashWise helps students and hostel staff manage laundry drop-offs, tracking, and collection with a clear, reliable workflow.</p>
+    </div>
+
+    <div class="homepage-feature-strip" aria-label="Service highlights">
+        <div class="homepage-feature-item">
+            <span class="homepage-feature-icon dashboard-icon dashboard-icon-blue" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M12 5v14"/><path d="M5 12h14"/><rect x="4" y="4" width="16" height="16" rx="3"/></svg>
+            </span>
+            <span>Easy deposit requests</span>
+        </div>
+        <div class="homepage-feature-item">
+            <span class="homepage-feature-icon dashboard-icon dashboard-icon-green" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M8 7h8"/><path d="M8 12h8"/><path d="M8 17h5"/><rect x="5" y="3" width="14" height="18" rx="2"/></svg>
+            </span>
+            <span>Live status tracking</span>
+        </div>
+        <div class="homepage-feature-item">
+            <span class="homepage-feature-icon dashboard-icon dashboard-icon-slate" aria-hidden="true">
+                <svg viewBox="0 0 24 24"><path d="M9 4h6l1 3 3 2v10H5V9l3-2 1-3Z"/></svg>
+            </span>
+            <span>Wardrobe-based selection</span>
+        </div>
+    </div>
+
+    <div class="info-grid two-up homepage-info-grid">
+        <article class="info-card homepage-info-card">
+            <h3>How it works</h3>
+            <p>Create a deposit, select clothes from your wardrobe, and follow each stage until collection is complete.</p>
+        </article>
+        <article class="info-card homepage-info-card">
+            <h3>Built for hostels</h3>
+            <p>Designed for organized shared laundry service with separate user and staff workflows in one system.</p>
+        </article>
+    </div>
+</section>
+{% endblock %}

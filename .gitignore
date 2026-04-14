@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+app/app.db
+app/static/uploads/
+
+.pytest_cache/
+.mypy_cache/

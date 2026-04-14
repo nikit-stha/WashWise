@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+
+{% block title %}All Deposits{% endblock %}
+{% block page_heading %}All deposits{% endblock %}
+
+{% block content %}
+
+<div class="table-card">
+    <div class="table-toolbar">
+        <div class="form-group search-group">
+            <label for="depositSearch"><h1>Deposit Status</h1></label><br>
+            <small class="section-text">
+                Search by Student ID
+            </small>
+            <input
+                id="depositSearch"
+                class="form-input"
+                type="text"
+                placeholder="e.g. XK-0001"
+                autocomplete="off"
+            >
+        </div>
+
+        <div class="form-group search-group">
+            <label for="depositStatusFilter">Status filter</label>
+            <small class="section-text">
+                Narrow deposits by current status
+            </small>
+            <select id="depositStatusFilter" class="form-input staff-deposits-filter-select">
+                <option value="">All statuses</option>
+                <option value="Not Given">Not Given</option>
+                <option value="Processing">Processing</option>
+                <option value="Completed">Completed</option>
+                <option value="Collected">Collected</option>
+            </select>
+        </div>
+    </div>
+
+    {% if deposits %}
+        <table class="custom-table staff-deposits-table" id="depositsTable">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Student ID</th>
+                    <th>Status</th>
+                    <th>Assigned Staff</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for deposit in deposits %}
+                    {% if deposit.status != 'Collected' %}
+                    <tr data-student-id="{{ deposit.student_id | lower }}" data-status="{{ deposit.status | lower }}">
+                        <td>{{ deposit.id }}</td>
+                        <td>{{ deposit.student_id }}</td>
+                        
+                        <td><span class="inline-badge">{{ deposit.status }}</span></td>
+                        
+                        <td>{{ deposit.staff_id or "Unassigned" }}</td>
+                        <td>
+                            <a class="btn btn-small" href="{{ url_for('view_deposit', deposit_id=deposit.id) }}">
+                                Open
+                            </a>
+                        </td>
+                    </tr>
+                    {% endif %}
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <div id="noSearchResults" class="empty-state-box" style="display: none; margin-top: 16px;">
+            <h3>No matching deposits found</h3>
+            <p>Try a different student ID or a shorter partial search.</p>
+        </div>
+    {% else %}
+        <div class="empty-state-box">
+            <h3>No deposits available</h3>
+            <p>Active and historical deposits will appear here.</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const searchInput = document.getElementById("depositSearch");
+    const statusFilter = document.getElementById("depositStatusFilter");
+    const table = document.getElementById("depositsTable");
+    const noResultsBox = document.getElementById("noSearchResults");
+
+    if (!searchInput || !table) return;
+
+    const rows = table.querySelectorAll("tbody tr");
+
+    function normalize(text) {
+        return text.toLowerCase().replace(/[^a-z0-9]/g, "");
+    }
+
+    function filterDeposits() {
+        const rawQuery = searchInput.value.trim().toLowerCase();
+        const normalizedQuery = normalize(rawQuery);
+        const selectedStatus = (statusFilter?.value || "").trim().toLowerCase();
+
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const studentId = row.dataset.studentId || "";
+            const normalizedStudentId = normalize(studentId);
+            const status = (row.dataset.status || "").trim().toLowerCase();
+
+            const matchesStudent =
+                rawQuery === "" ||
+                studentId.includes(rawQuery) ||
+                normalizedStudentId.includes(normalizedQuery);
+            const matchesStatus =
+                selectedStatus === "" ||
+                status === selectedStatus;
+
+            const matches = matchesStudent && matchesStatus;
+
+            row.style.display = matches ? "" : "none";
+
+            if (matches) visibleCount++;
+        });
+
+        if (noResultsBox) {
+            noResultsBox.style.display = visibleCount === 0 ? "block" : "none";
+        }
+    }
+
+    searchInput.addEventListener("input", filterDeposits);
+    if (statusFilter) {
+        statusFilter.addEventListener("change", filterDeposits);
+    }
+});
+</script>
+{% endblock %}

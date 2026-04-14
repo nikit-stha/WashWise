@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="washwiseAppleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#2457ff"/>
+      <stop offset="100%" stop-color="#3fc1ff"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="44" fill="url(#washwiseAppleGradient)"/>
+  <text x="90" y="114" text-anchor="middle" font-family="Arial, sans-serif" font-size="78" font-weight="800" fill="#ffffff">W</text>
+</svg>

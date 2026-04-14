@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+
+{% block title %}My Profile{% endblock %}
+{% block page_heading %}My profile{% endblock %}
+
+{% block content %}
+<section class="detail-card profile-card">
+    <div class="detail-header">
+        <div>
+            <h1>&nbsp;{{ user.username }}</h1>
+        </div>
+        <span class="status-badge">User</span>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-box">
+            <h3>Personal details</h3>
+            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+        </div>
+        <div class="detail-box">
+            <h3>Residence details</h3>
+            <p><strong>Hostel code:</strong> {{ user.hostel_number }}</p>
+            <p><strong>Unique ID:</strong> {{ user.user_id }}</p>
+        </div>
+    </div>
+
+    <div class="profile-actions">
+        <a href="{{ url_for('user_logout') }}" class="btn btn-danger">Logout</a>
+    </div>
+</section>
+{% endblock %}

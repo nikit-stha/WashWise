@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block title %}Deposit Details{% endblock %}
+{% block page_heading %}Deposit details{% endblock %}
+
+{% block content %}
+<div class="detail-card">
+    <div class="detail-header">
+        <div>
+            <p class="eyebrow">Laundry record</p>
+            <h2>Deposit #{{ deposit.id }}</h2>
+            <p class="detail-subtext">Review item information, service data, and current processing status.</p>
+        </div>
+        <span class="status-badge">{{ deposit.status }}</span>
+    </div>
+
+    <div class="detail-grid">
+        <div class="detail-box">
+            <h3>Basic information</h3>
+            <p><strong>Student ID:</strong> {{ deposit.student_id }}</p>
+            <p><strong>Staff ID:</strong> {{ deposit.staff_id or "Not assigned" }}</p>
+            <p><strong>Created:</strong> {{ deposit.created_at.strftime('%Y-%m-%d') if deposit.created_at else "N/A" }}</p>
+        </div>
+
+        <div class="detail-box">
+            <h3>Service details</h3>
+            {% if deposit.service %}
+                <p><strong>Item count:</strong> {{ deposit.service.item_count }}</p>
+            {% else %}
+                <p>No service details available.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if current_user.__class__.__name__ == "User" %}
+        <div class="action-section deposit-user-section">
+            {% if deposit.status == "Not Given" %}
+                <div class="deposit-user-main-block">
+                    <div class="deposit-user-actions">
+                        <a class="btn btn-secondary" href="{{ url_for('edit_deposit_route', deposit_id=deposit.id) }}">Edit clothes</a>
+                    </div>
+                    <p class="section-text">You can update or remove the deposit until it is handed over.</p>
+                </div>
+
+                <form method="POST" action="{{ url_for('delete_deposit_route', deposit_id=deposit.id) }}" onsubmit="return confirm('Remove this deposit? This cannot be undone.');">
+                    <button class="btn btn-danger" type="submit">Remove deposit</button>
+                </form>
+            {% else %}
+                <p class="section-text">Clothes can only be edited while the deposit status is Not Given.</p>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <div class="items-section">
+        <div class="section-header">
+            <h3>Clothing items</h3>
+            <span class="item-total">{{ deposit.service.item_count if deposit.service else deposit.items|length }} item(s)</span>
+        </div>
+
+        {% if deposit.items %}
+            <div class="item-grid">
+                {% for item in deposit.items %}
+                    <div class="item-card">
+                        {% if item.image_filename %}
+                            <img src="{{ url_for('static', filename='uploads/' ~ item.image_filename) }}" alt="{{ item.description }}" class="item-image" loading="lazy" decoding="async">
+                        {% else %}
+                            <div class="img-placeholder">No image</div>
+                        {% endif %}
+                        <div class="item-card-body">
+                            <p class="item-name">{{ item.description }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state-box">
+                <p>No clothing items found for this deposit.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    {% if current_user.__class__.__name__ == "Staff" %}
+        <div class="action-section">
+            <form method="POST" action="{{ url_for('assign_deposit', deposit_id=deposit.id) }}">
+                <button class="btn btn-secondary" type="submit">Assign to me</button>
+            </form>
+
+            <form method="POST" action="{{ url_for('update_deposit_status_route', deposit_id=deposit.id) }}" class="status-form">
+                <select class="form-input" name="status">
+                    <option value="Not Given" {% if deposit.status == "Not Given" %}selected{% endif %}>Not Given</option>
+                    <option value="Processing" {% if deposit.status == "Processing" %}selected{% endif %}>Processing</option>
+                    <option value="Completed" {% if deposit.status == "Completed" %}selected{% endif %}>Completed</option>
+                    <option value="Collected" {% if deposit.status == "Collected" %}selected{% endif %}>Collected</option>
+                </select>
+                <button class="btn btn-primary" type="submit">Update status</button>
+            </form>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
