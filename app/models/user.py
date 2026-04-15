@@ -29,7 +29,6 @@ class User(UserMixin, db.Model):
 
     username: so.Mapped[str] = so.mapped_column(
         sa.String(64),
-        unique=True,
         index=True,
         nullable=False
     )
@@ -143,4 +142,12 @@ class User(UserMixin, db.Model):
         return db.session.get(User, user_id)
 
     def __repr__(self):
-        return f"<User {self.user_id} - {self.username}>"
+        return f"<User {self.user_id} - {self.name}>"
+
+    @property
+    def name(self):
+        return self.username
+
+    @name.setter
+    def name(self, value):
+        self.username = value

@@ -24,9 +24,9 @@
             {{ form.hidden_tag() }}
 
             <div class="form-group auth-form-group">
-                {{ form.username.label(class="auth-field-label") }}
-                {{ form.username(class="form-input auth-input", placeholder="John Doe") }}
-                {% for error in form.username.errors %}
+                {{ form.name.label(class="auth-field-label") }}
+                {{ form.name(class="form-input auth-input", placeholder="Your Name") }}
+                {% for error in form.name.errors %}
                     <small class="error-text">{{ error }}</small>
                 {% endfor %}
             </div>
@@ -41,7 +41,7 @@
 
             <div class="form-group auth-form-group">
                 {{ form.hostel_number.label(class="auth-field-label") }}
-                {{ form.hostel_number(class="form-input auth-input", placeholder="e.g. K") }}
+                {{ form.hostel_number(class="form-input auth-input auth-select") }}
                 {% for error in form.hostel_number.errors %}
                     <small class="error-text">{{ error }}</small>
                 {% endfor %}

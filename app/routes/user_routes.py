@@ -2,31 +2,42 @@ from flask import render_template, flash, redirect, url_for, jsonify
 from flask_login import current_user, login_required
 from app.extensions import app
 from app.models.user import User
-from app.services.app_setting_service import get_settings
+from app.utils.hostels import get_hostel_label, normalize_hostel_codes
+from app.services.app_setting_service import (
+    get_settings,
+    is_collection_enabled_for_hostel,
+    is_deposit_enabled_for_hostel,
+)
 from app.services.deposit_service import (
     get_completed_user_deposits,
     get_recent_active_user_deposits,
 )
 
 
-def _get_user_dashboard_notifications(student_id):
+def _get_user_dashboard_notifications(student_id, hostel_code):
     settings = get_settings()
     notifications = []
 
-    if settings.deposit_enabled:
+    if is_deposit_enabled_for_hostel(hostel_code):
+        deposit_hostel_slug = "-".join(
+            normalize_hostel_codes(settings.deposit_hostel_code)
+        )
         notifications.append({
-            "id": "deposit-open",
-            "title": "Deposits are open",
-            "message": "Staff has opened laundry deposits. You can create a new deposit now.",
+            "id": f"deposit-open-{deposit_hostel_slug}",
+            "title": "Deposits are open for your hostel",
+            "message": "Staff has opened laundry deposits for your hostel. You can create a new deposit now.",
             "url": url_for("create_deposit_route"),
             "tone": "info",
         })
 
-    if settings.collection_enabled:
+    if is_collection_enabled_for_hostel(hostel_code):
+        collection_hostel_slug = "-".join(
+            normalize_hostel_codes(settings.collection_hostel_code)
+        )
         notifications.append({
-            "id": "collection-open",
-            "title": "Collection is open",
-            "message": "Staff has opened collection. Collect completed clothes from the laundry counter.",
+            "id": f"collection-open-{collection_hostel_slug}",
+            "title": "Collection is open for your hostel",
+            "message": "Staff has opened collection for your hostel. Collect completed clothes from the laundry counter.",
             "url": url_for("my_deposits"),
             "tone": "success",
         })
@@ -62,7 +73,10 @@ def user_dashboard():
         'user_dashboard.html',
         title="Student Portal",
         active_deposits=get_recent_active_user_deposits(current_user.user_id),
-        notifications=_get_user_dashboard_notifications(current_user.user_id),
+        notifications=_get_user_dashboard_notifications(
+            current_user.user_id,
+            current_user.hostel_number,
+        ),
     )
 
 
@@ -72,7 +86,10 @@ def user_notifications():
     if not isinstance(current_user, User):
         return jsonify({"error": "Access denied: Users only."}), 403
 
-    notifications = _get_user_dashboard_notifications(current_user.user_id)
+    notifications = _get_user_dashboard_notifications(
+        current_user.user_id,
+        current_user.hostel_number,
+    )
     return jsonify({
         "count": len(notifications),
         "notifications": notifications,
@@ -86,4 +103,9 @@ def user_profile():
         flash("Access denied: Users only.")
         return redirect(url_for('index'))
 
-    return render_template('profile.html', title="My Profile", user=current_user)
+    return render_template(
+        'profile.html',
+        title="My Profile",
+        user=current_user,
+        hostel_label=get_hostel_label(current_user.hostel_number),
+    )

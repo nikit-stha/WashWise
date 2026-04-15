@@ -7,7 +7,7 @@
 <section class="detail-card profile-card">
     <div class="detail-header">
         <div>
-            <h1>&nbsp;{{ user.username }}</h1>
+            <h1>&nbsp;{{ user.name }}</h1>
         </div>
         <span class="status-badge">User</span>
     </div>
@@ -15,12 +15,12 @@
     <div class="detail-grid">
         <div class="detail-box">
             <h3>Personal details</h3>
-            <p><strong>Username:</strong> {{ user.username }}</p>
+            <p><strong>Name:</strong> {{ user.name }}</p>
             <p><strong>Email:</strong> {{ user.email }}</p>
         </div>
         <div class="detail-box">
             <h3>Residence details</h3>
-            <p><strong>Hostel code:</strong> {{ user.hostel_number }}</p>
+            <p><strong>Hostel:</strong> {{ hostel_label }}</p>
             <p><strong>Unique ID:</strong> {{ user.user_id }}</p>
         </div>
     </div>

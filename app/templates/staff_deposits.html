@@ -21,18 +21,17 @@
             >
         </div>
 
-        <div class="form-group search-group">
-            <label for="depositStatusFilter">Status filter</label>
+        <div class="form-group search-group staff-status-filter-group">
+            <label>Status filter</label>
             <small class="section-text">
-                Narrow deposits by current status
+                Tap a status to narrow results
             </small>
-            <select id="depositStatusFilter" class="form-input staff-deposits-filter-select">
-                <option value="">All statuses</option>
-                <option value="Not Given">Not Given</option>
-                <option value="Processing">Processing</option>
-                <option value="Completed">Completed</option>
-                <option value="Collected">Collected</option>
-            </select>
+            <div class="staff-status-filter-scroll" role="group" aria-label="Filter deposits by status">
+                <button type="button" class="staff-status-filter-chip is-active" data-status-filter-button data-status="" aria-pressed="true">All</button>
+                <button type="button" class="staff-status-filter-chip" data-status-filter-button data-status="not given" aria-pressed="false">Not Given</button>
+                <button type="button" class="staff-status-filter-chip" data-status-filter-button data-status="processing" aria-pressed="false">Processing</button>
+                <button type="button" class="staff-status-filter-chip" data-status-filter-button data-status="completed" aria-pressed="false">Completed</button>
+            </div>
         </div>
     </div>
 
@@ -43,6 +42,7 @@
                     <th>ID</th>
                     <th>Student ID</th>
                     <th>Status</th>
+                    <th>Clothing type</th>
                     <th>Assigned Staff</th>
                     <th>Action</th>
                 </tr>
@@ -55,6 +55,11 @@
                         <td>{{ deposit.student_id }}</td>
                         
                         <td><span class="inline-badge">{{ deposit.status }}</span></td>
+                        <td>
+                            <span class="deposit-type-summary" title="{{ deposit.item_type_full_summary }}">
+                                {{ deposit.item_type_summary }}
+                            </span>
+                        </td>
                         
                         <td>{{ deposit.staff_id or "Unassigned" }}</td>
                         <td>
@@ -83,9 +88,10 @@
 <script>
 document.addEventListener("DOMContentLoaded", function () {
     const searchInput = document.getElementById("depositSearch");
-    const statusFilter = document.getElementById("depositStatusFilter");
+    const statusButtons = document.querySelectorAll("[data-status-filter-button]");
     const table = document.getElementById("depositsTable");
     const noResultsBox = document.getElementById("noSearchResults");
+    let selectedStatus = "";
 
     if (!searchInput || !table) return;
 
@@ -98,7 +104,6 @@ document.addEventListener("DOMContentLoaded", function () {
     function filterDeposits() {
         const rawQuery = searchInput.value.trim().toLowerCase();
         const normalizedQuery = normalize(rawQuery);
-        const selectedStatus = (statusFilter?.value || "").trim().toLowerCase();
 
         let visibleCount = 0;
 
@@ -128,9 +133,20 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     searchInput.addEventListener("input", filterDeposits);
-    if (statusFilter) {
-        statusFilter.addEventListener("change", filterDeposits);
-    }
+
+    statusButtons.forEach(button => {
+        button.addEventListener("click", function () {
+            selectedStatus = button.dataset.status || "";
+
+            statusButtons.forEach(nextButton => {
+                const isActive = nextButton === button;
+                nextButton.classList.toggle("is-active", isActive);
+                nextButton.setAttribute("aria-pressed", isActive ? "true" : "false");
+            });
+
+            filterDeposits();
+        });
+    });
 });
 </script>
 {% endblock %}

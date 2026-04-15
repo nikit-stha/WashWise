@@ -25,6 +25,8 @@ def ensure_database_ready():
     with app.app_context():
         db.create_all()
         os.makedirs(app.config["UPLOAD_FOLDER"], exist_ok=True)
+        WardrobeItem.ensure_schema()
+        ClothingItem.ensure_schema()
         AppSetting.get_singleton()
 
 

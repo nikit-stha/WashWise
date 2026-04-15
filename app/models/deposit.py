@@ -62,3 +62,27 @@ class Deposit(db.Model):
         back_populates="deposit",
         cascade="all, delete-orphan"
     )
+
+    def _unique_item_types(self) -> list[str]:
+        item_types = [
+            item.clothing_type
+            for item in self.items
+            if item.clothing_type
+        ]
+        return list(dict.fromkeys(item_types))
+
+    @property
+    def item_type_summary(self) -> str:
+        item_types = self._unique_item_types()
+        if not item_types:
+            return "Type not set"
+        if len(item_types) <= 2:
+            return ", ".join(item_types)
+        return f"{item_types[0]}, {item_types[1]} +{len(item_types) - 2} more"
+
+    @property
+    def item_type_full_summary(self) -> str:
+        item_types = self._unique_item_types()
+        if not item_types:
+            return "Type not set"
+        return ", ".join(item_types)

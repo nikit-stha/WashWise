@@ -25,7 +25,7 @@
 
             <div class="form-group auth-form-group">
                 {{ form.name.label(class="auth-field-label") }}
-                {{ form.name(class="form-input auth-input", placeholder="Jane Doe") }}
+                {{ form.name(class="form-input auth-input", placeholder="Your Name") }}
                 {% for error in form.name.errors %}
                     <small class="error-text">{{ error }}</small>
                 {% endfor %}

@@ -5,6 +5,7 @@ import sqlalchemy as sa
 from app.extensions import app, db
 from app.models.user import User
 from app.models.wardrobe_item import WardrobeItem
+from app.utils.clothing_types import CLOTHING_TYPES, normalize_clothing_type
 from app.utils.file_utils import save_image, delete_image_if_unused
 
 
@@ -17,6 +18,7 @@ def user_wardrobe():
 
     if request.method == "POST":
         name = request.form.get("name", "").strip()
+        clothing_type = normalize_clothing_type(request.form.get("clothing_type"))
         image = next(
             (uploaded_file for uploaded_file in request.files.getlist("image")
              if uploaded_file and uploaded_file.filename),
@@ -25,6 +27,10 @@ def user_wardrobe():
 
         if not name:
             flash("Clothing name is required.")
+            return redirect(url_for("user_wardrobe"))
+
+        if clothing_type is None:
+            flash("Please select a valid clothing type.")
             return redirect(url_for("user_wardrobe"))
 
         if image is None:
@@ -39,6 +45,7 @@ def user_wardrobe():
         item = WardrobeItem(
             user_id=current_user.user_id,
             name=name,
+            clothing_type=clothing_type,
             image_filename=saved_filename
         )
 
@@ -54,6 +61,7 @@ def user_wardrobe():
             sa.orm.load_only(
                 WardrobeItem.id,
                 WardrobeItem.name,
+                WardrobeItem.clothing_type,
                 WardrobeItem.image_filename,
                 WardrobeItem.created_at,
             )
@@ -65,7 +73,8 @@ def user_wardrobe():
     return render_template(
         "wardrobe.html",
         title="My Wardrobe",
-        wardrobe_items=wardrobe_items
+        wardrobe_items=wardrobe_items,
+        clothing_types=CLOTHING_TYPES,
     )
 
 

@@ -1,4 +1,3 @@
-import re
 import secrets
 from datetime import datetime, timedelta, timezone
 from types import SimpleNamespace
@@ -16,6 +15,7 @@ from app.utils.validators import (
     is_valid_password,
     is_thapar_email,
 )
+from app.utils.hostels import is_valid_hostel_code, normalize_hostel_code
 
 
 PENDING_USER_REGISTRATION_SESSION_KEY = "pending_user_registration"
@@ -141,7 +141,7 @@ def _pending_registration_matches_password(pending: dict | None, password: str) 
 def _pending_user_recipient(pending: dict):
     return SimpleNamespace(
         email=pending["email"],
-        username=pending["username"],
+        name=pending.get("name") or pending.get("username"),
     )
 
 
@@ -153,9 +153,7 @@ def _pending_staff_recipient(pending: dict):
 
 
 def normalize_hostel_number(hostel_number: str) -> str:
-    hostel_number = (hostel_number or "").strip().upper()
-    hostel_number = re.sub(r"[^A-Z0-9]", "", hostel_number)
-    return hostel_number
+    return normalize_hostel_code(hostel_number)
 
 
 def generate_user_id(hostel_number: str) -> str:
@@ -178,17 +176,20 @@ def generate_user_id(hostel_number: str) -> str:
     return f"{prefix}-{max_number + 1:04d}"
 
 
-def register_user(username, email, password, hostel_number):
-    username = (username or "").strip()
+def register_user(name, email, password, hostel_number):
+    name = (name or "").strip()
     email = (email or "").strip().lower()
     hostel_number = normalize_hostel_number(hostel_number)
     password = password or ""
 
-    if not username:
-        return None, None, "Username is required."
+    if not name:
+        return None, None, "Name is required."
 
     if not hostel_number:
-        return None, None, "Hostel number/code is required."
+        return None, None, "Please select your hostel."
+
+    if not is_valid_hostel_code(hostel_number):
+        return None, None, "Please choose a hostel from the list."
 
     if not is_valid_email(email):
         return None, None, "Invalid email format."
@@ -201,12 +202,6 @@ def register_user(username, email, password, hostel_number):
             "Password must be more than 6 characters and contain "
             "a special character."
         )
-
-    existing_user = db.session.scalar(
-        sa.select(User).where(User.username == username)
-    )
-    if existing_user:
-        return None, None, "Username already exists."
 
     existing_email = db.session.scalar(
         sa.select(User).where(User.email == email)
@@ -222,7 +217,7 @@ def register_user(username, email, password, hostel_number):
     _store_pending_registration(
         PENDING_USER_REGISTRATION_SESSION_KEY,
         {
-            "username": username,
+            "name": name,
             "email": email,
             "hostel_number": hostel_number,
             "password_hash": generate_password_hash(password),
@@ -232,7 +227,7 @@ def register_user(username, email, password, hostel_number):
         },
     )
 
-    return SimpleNamespace(email=email, username=username), otp, None
+    return SimpleNamespace(email=email, name=name), otp, None
 
 
 def complete_user_registration(email: str, otp: str):
@@ -252,21 +247,20 @@ def complete_user_registration(email: str, otp: str):
             return None, "OTP attempt limit reached. Please request a new OTP."
         return None, f"Invalid or expired OTP. {remaining} attempt(s) remaining."
 
-    username = (pending.get("username") or "").strip()
+    name = (pending.get("name") or pending.get("username") or "").strip()
     email = (pending.get("email") or "").strip().lower()
     hostel_number = normalize_hostel_number(pending.get("hostel_number"))
     password_hash = pending.get("password_hash")
 
-    if not username or not email or not hostel_number or not password_hash:
+    if (
+        not name
+        or not email
+        or not hostel_number
+        or not is_valid_hostel_code(hostel_number)
+        or not password_hash
+    ):
         _clear_pending_registration(PENDING_USER_REGISTRATION_SESSION_KEY)
         return None, "Registration data is invalid. Please register again."
-
-    existing_user = db.session.scalar(
-        sa.select(User).where(User.username == username)
-    )
-    if existing_user is not None:
-        _clear_pending_registration(PENDING_USER_REGISTRATION_SESSION_KEY)
-        return None, "Username already exists. Please register again."
 
     existing_email = db.session.scalar(
         sa.select(User).where(User.email == email)
@@ -277,7 +271,7 @@ def complete_user_registration(email: str, otp: str):
 
     new_user = User(
         user_id=generate_user_id(hostel_number),
-        username=username,
+        name=name,
         email=email,
         hostel_number=hostel_number,
         password_hash=password_hash,

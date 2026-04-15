@@ -4,6 +4,7 @@ import sqlalchemy as sa
 from flask_wtf import FlaskForm
 from wtforms import (
     StringField,
+    SelectField,
     PasswordField,
     BooleanField,
     SubmitField,
@@ -12,6 +13,7 @@ from wtforms import (
 )
 from wtforms.validators import (
     ValidationError,
+    AnyOf,
     DataRequired,
     Email,
     EqualTo,
@@ -22,6 +24,7 @@ from app.extensions import db
 from app.models.user import User
 from app.utils.validators import is_thapar_email
 from app.models.app_setting import AppSetting
+from app.utils.hostels import HOSTEL_CHOICES, VALID_HOSTEL_CODES
 
 class LoginForm(FlaskForm):
     email = StringField(
@@ -41,8 +44,8 @@ class LoginForm(FlaskForm):
 
 
 class RegistrationForm(FlaskForm):
-    username = StringField(
-        "Username",
+    name = StringField(
+        "Name",
         validators=[DataRequired(), Length(min=3, max=64)]
     )
 
@@ -51,9 +54,16 @@ class RegistrationForm(FlaskForm):
         validators=[DataRequired(), Email(), Length(max=120)]
     )
 
-    hostel_number = StringField(
-        "Hostel Number / Code",
-        validators=[DataRequired(), Length(min=1, max=20)]
+    hostel_number = SelectField(
+        "Hostel",
+        choices=(("", "Select your hostel"), *HOSTEL_CHOICES),
+        validators=[
+            DataRequired(message="Please select your hostel."),
+            AnyOf(
+                VALID_HOSTEL_CODES,
+                message="Please choose a hostel from the list.",
+            ),
+        ],
     )
 
     password = PasswordField(
@@ -67,13 +77,6 @@ class RegistrationForm(FlaskForm):
     )
 
     submit = SubmitField("Register")
-
-    def validate_username(self, username):
-        user = db.session.scalar(
-            sa.select(User).where(User.username == username.data)
-        )
-        if user is not None:
-            raise ValidationError("Please use a different username.")
 
     def validate_email(self, email):
         user = db.session.scalar(
@@ -144,8 +147,8 @@ class EmailVerificationForm(FlaskForm):
 
 
 class EditProfileForm(FlaskForm):
-    username = StringField(
-        "Username",
+    name = StringField(
+        "Name",
         validators=[DataRequired(), Length(min=3, max=64)]
     )
     about_me = TextAreaField(

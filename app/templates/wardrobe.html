@@ -23,6 +23,43 @@
                 <input type="text" id="name" name="name" class="form-input" placeholder="e.g. Blue hoodie" required>
             </div>
 
+            <div class="form-group">
+                <label for="clothing_type">Clothing type</label>
+                <div class="clothing-type-menu" data-clothing-type-menu>
+                    <input type="hidden" id="clothing_type" name="clothing_type" data-clothing-type-input>
+
+                    <details class="clothing-type-selector" data-clothing-type-details>
+                        <summary class="clothing-type-trigger">
+                            <span data-clothing-type-label>Select clothing type</span>
+                            <svg viewBox="0 0 24 24" aria-hidden="true">
+                                <path d="M6 9l6 6 6-6"/>
+                            </svg>
+                        </summary>
+
+                        <div class="clothing-type-selector-panel">
+                            <div class="clothing-type-option-list">
+                                {% for clothing_type in clothing_types %}
+                                    <label class="clothing-type-option" for="clothing-type-{{ loop.index }}">
+                                        <input
+                                            id="clothing-type-{{ loop.index }}"
+                                            type="radio"
+                                            name="clothing_type_choice"
+                                            value="{{ clothing_type }}"
+                                            data-clothing-type-option
+                                        >
+                                        <span class="clothing-type-option-name">{{ clothing_type }}</span>
+                                    </label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </details>
+
+                    <small class="staff-dashboard-form-error clothing-type-error" data-clothing-type-error hidden>
+                        Select a clothing type.
+                    </small>
+                </div>
+            </div>
+
             <!-- IMAGE INPUT -->
             <div class="form-group">
                 <label>Upload image</label>
@@ -78,6 +115,7 @@
 
                     <div class="wardrobe-item-body">
                         <h4>{{ item.name }}</h4>
+                        <span class="clothing-type-pill">{{ item.clothing_type or "Type not set" }}</span>
                         <p>Added on {{ item.created_at.strftime('%Y-%m-%d') }}</p>
 
                         <form method="POST" action="{{ url_for('delete_wardrobe_item', item_id=item.id) }}" onsubmit="return confirm('Delete this wardrobe item?');">
@@ -103,6 +141,11 @@ const fileInput = document.getElementById("file-input");
 const previewImageElement = document.getElementById("preview-image");
 const uploadStatus = document.getElementById("upload-status");
 const saveItemButton = document.getElementById("save-item-button");
+const clothingTypeDetails = document.querySelector("[data-clothing-type-details]");
+const clothingTypeInput = document.querySelector("[data-clothing-type-input]");
+const clothingTypeLabel = document.querySelector("[data-clothing-type-label]");
+const clothingTypeError = document.querySelector("[data-clothing-type-error]");
+const clothingTypeOptions = document.querySelectorAll("[data-clothing-type-option]");
 
 const MAX_UPLOAD_DIMENSION = 1600;
 const TARGET_UPLOAD_SIZE_BYTES = 450 * 1024;
@@ -117,10 +160,56 @@ function openFile() {
     fileInput.click();
 }
 
+function setClothingTypeError(isVisible) {
+    if (clothingTypeDetails) {
+        clothingTypeDetails.classList.toggle("has-error", isVisible);
+    }
+
+    if (clothingTypeError) {
+        clothingTypeError.hidden = !isVisible;
+    }
+}
+
+clothingTypeOptions.forEach(function (option) {
+    option.addEventListener("change", function () {
+        if (!option.checked) return;
+
+        if (clothingTypeInput) {
+            clothingTypeInput.value = option.value;
+        }
+
+        if (clothingTypeLabel) {
+            clothingTypeLabel.textContent = option.value;
+        }
+
+        if (clothingTypeDetails) {
+            clothingTypeDetails.classList.add("has-value");
+            clothingTypeDetails.open = false;
+        }
+
+        setClothingTypeError(false);
+    });
+});
+
+document.addEventListener("click", function (event) {
+    if (clothingTypeDetails && !clothingTypeDetails.contains(event.target)) {
+        clothingTypeDetails.open = false;
+    }
+});
+
 cameraInput.addEventListener("change", handleImageSelection);
 fileInput.addEventListener("change", handleImageSelection);
 
 wardrobeForm.addEventListener("submit", function (event) {
+    if (clothingTypeInput && !clothingTypeInput.value) {
+        event.preventDefault();
+        setClothingTypeError(true);
+        if (clothingTypeDetails) {
+            clothingTypeDetails.open = true;
+        }
+        return;
+    }
+
     if (isCompressingImage) {
         event.preventDefault();
         setUploadStatus("Please wait a moment. Your image is still being optimized.", "is-pending");

@@ -87,7 +87,7 @@ def user_login():
 
     if form.validate_on_submit():
         user, status, error = login_user_service(
-            form.email.data,   # ✅ FIXED (was username)
+            form.email.data,
             form.password.data,
             remember=form.remember_me.data,
         )
@@ -208,7 +208,7 @@ def user_register():
 
     if form.validate_on_submit():
         user, otp, error = register_user(
-            form.username.data,
+            form.name.data,
             form.email.data,
             form.password.data,
             form.hostel_number.data,

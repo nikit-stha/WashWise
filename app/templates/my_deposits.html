@@ -19,6 +19,7 @@
                 <tr>
                     <th>SN</th>
                     <th>Status</th>
+                    <th>Clothing type</th>
                     <th>Created</th>
                     <th>Action</th>
                 </tr>
@@ -28,6 +29,11 @@
                     <tr>
                         <td>{{ loop.index }}</td>
                         <td><span class="inline-badge">{{ deposit.status }}</span></td>
+                        <td>
+                            <span class="deposit-type-summary" title="{{ deposit.item_type_full_summary }}">
+                                {{ deposit.item_type_summary }}
+                            </span>
+                        </td>
                         <td>{{ deposit.created_at.strftime('%Y-%m-%d') if deposit.created_at else 'N/A' }}</td>
                         <td><a class="btn btn-small" href="{{ url_for('view_deposit', deposit_id=deposit.id) }}">Open</a></td>
                     </tr>

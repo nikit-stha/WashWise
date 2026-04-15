@@ -1,12 +1,20 @@
-from flask import render_template, flash, redirect, url_for
+from flask import render_template, flash, redirect, request, url_for
 from flask_login import current_user, login_required
 
 from app.extensions import app
 from app.models.staff import Staff
+from app.utils.hostels import (
+    HOSTEL_CHOICES,
+    get_hostel_labels,
+    get_hostel_summary,
+    normalize_hostel_codes,
+)
 from app.services.app_setting_service import (
     get_settings,
     toggle_deposit,
     toggle_collection,
+    update_collection_hostels,
+    update_deposit_hostels,
 )
 
 
@@ -23,6 +31,13 @@ def staff_dashboard():
         "staff_dashboard.html",
         title="Staff Control Panel",
         settings=settings,
+        hostel_choices=HOSTEL_CHOICES,
+        deposit_hostel_label=get_hostel_summary(settings.deposit_hostel_code),
+        deposit_hostel_full_label=get_hostel_labels(settings.deposit_hostel_code),
+        deposit_hostel_codes=normalize_hostel_codes(settings.deposit_hostel_code),
+        collection_hostel_label=get_hostel_summary(settings.collection_hostel_code),
+        collection_hostel_full_label=get_hostel_labels(settings.collection_hostel_code),
+        collection_hostel_codes=normalize_hostel_codes(settings.collection_hostel_code),
     )
 
 
@@ -47,9 +62,36 @@ def toggle_deposit_route():
         flash("Unauthorized access.", "danger")
         return redirect(url_for("index"))
 
-    new_status = toggle_deposit()
+    settings, error = toggle_deposit(request.form.getlist("hostel_codes"))
+    if error:
+        flash(error, "danger")
+        return redirect(url_for("staff_dashboard"))
+
+    if settings.deposit_enabled:
+        flash(
+            f"Deposits enabled for {get_hostel_summary(settings.deposit_hostel_code)}.",
+            "success",
+        )
+    else:
+        flash("Deposits disabled successfully.", "success")
+
+    return redirect(url_for("staff_dashboard"))
+
+
+@app.route("/staff/update-deposit-hostels", methods=["POST"])
+@login_required
+def update_deposit_hostels_route():
+    if not isinstance(current_user, Staff):
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for("index"))
+
+    settings, error = update_deposit_hostels(request.form.getlist("hostel_codes"))
+    if error:
+        flash(error, "danger")
+        return redirect(url_for("staff_dashboard"))
+
     flash(
-        f"Deposits {'enabled' if new_status else 'disabled'} successfully.",
+        f"Deposit hostels updated to {get_hostel_summary(settings.deposit_hostel_code)}.",
         "success",
     )
     return redirect(url_for("staff_dashboard"))
@@ -62,9 +104,36 @@ def toggle_collection_route():
         flash("Unauthorized access.", "danger")
         return redirect(url_for("index"))
 
-    new_status = toggle_collection()
+    settings, error = toggle_collection(request.form.getlist("hostel_codes"))
+    if error:
+        flash(error, "danger")
+        return redirect(url_for("staff_dashboard"))
+
+    if settings.collection_enabled:
+        flash(
+            f"Collection enabled for {get_hostel_summary(settings.collection_hostel_code)}.",
+            "success",
+        )
+    else:
+        flash("Collection disabled successfully.", "success")
+
+    return redirect(url_for("staff_dashboard"))
+
+
+@app.route("/staff/update-collection-hostels", methods=["POST"])
+@login_required
+def update_collection_hostels_route():
+    if not isinstance(current_user, Staff):
+        flash("Unauthorized access.", "danger")
+        return redirect(url_for("index"))
+
+    settings, error = update_collection_hostels(request.form.getlist("hostel_codes"))
+    if error:
+        flash(error, "danger")
+        return redirect(url_for("staff_dashboard"))
+
     flash(
-        f"Collection {'enabled' if new_status else 'disabled'} successfully.",
+        f"Collection hostels updated to {get_hostel_summary(settings.collection_hostel_code)}.",
         "success",
     )
     return redirect(url_for("staff_dashboard"))

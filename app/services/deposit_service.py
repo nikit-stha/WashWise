@@ -52,6 +52,7 @@ def create_deposit(
                 so.load_only(
                     WardrobeItem.id,
                     WardrobeItem.name,
+                    WardrobeItem.clothing_type,
                     WardrobeItem.image_filename,
                 )
             )
@@ -95,6 +96,7 @@ def create_deposit(
         image_filename = image_filenames[i] if i < len(image_filenames) else None
         item = ClothingItem(
             description=desc,
+            clothing_type=None,
             image_filename=image_filename
         )
         deposit.items.append(item)
@@ -109,6 +111,7 @@ def create_deposit(
 
         item = ClothingItem(
             description=wardrobe_item.name,
+            clothing_type=wardrobe_item.clothing_type,
             image_filename=archived_image_filename or wardrobe_item.image_filename
         )
         deposit.items.append(item)
@@ -133,7 +136,11 @@ def get_user_deposits(student_id: str):
                 Deposit.id,
                 Deposit.status,
                 Deposit.created_at,
-            )
+            ),
+            so.selectinload(Deposit.items).load_only(
+                ClothingItem.id,
+                ClothingItem.clothing_type,
+            ),
         )
         .where(Deposit.student_id == student_id)
         .order_by(Deposit.created_at.desc())
@@ -214,7 +221,11 @@ def get_all_deposits():
                 Deposit.staff_id,
                 Deposit.status,
                 Deposit.created_at,
-            )
+            ),
+            so.selectinload(Deposit.items).load_only(
+                ClothingItem.id,
+                ClothingItem.clothing_type,
+            ),
         )
         .order_by(Deposit.created_at.desc())
     ).all()
@@ -305,6 +316,7 @@ def update_deposit_items_from_wardrobe(
             so.load_only(
                 WardrobeItem.id,
                 WardrobeItem.name,
+                WardrobeItem.clothing_type,
                 WardrobeItem.image_filename,
             )
         )
@@ -339,6 +351,7 @@ def update_deposit_items_from_wardrobe(
         deposit.items.append(
             ClothingItem(
                 description=wardrobe_item.name,
+                clothing_type=wardrobe_item.clothing_type,
                 image_filename=archived_image_filename or wardrobe_item.image_filename,
             )
         )

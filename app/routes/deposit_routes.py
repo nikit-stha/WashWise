@@ -22,8 +22,8 @@ from app.services.deposit_service import (
 )
 from app.services.app_setting_service import (
     get_settings,
-    is_deposit_enabled,
-    is_collection_enabled,
+    is_deposit_enabled_for_hostel,
+    is_collection_enabled_for_hostel,
 )
 
 
@@ -34,9 +34,9 @@ def create_deposit_route():
         flash("Access denied: Users only.", "danger")
         return redirect(url_for("index"))
 
-    if not is_deposit_enabled():
+    if not is_deposit_enabled_for_hostel(current_user.hostel_number):
         flash(
-            "Deposits are currently closed. Please wait for staff to enable them.",
+            "Deposits are currently closed for your hostel. Please wait for staff to enable them.",
             "warning",
         )
         return redirect(url_for("my_deposits"))
@@ -56,6 +56,7 @@ def create_deposit_route():
             sa.orm.load_only(
                 WardrobeItem.id,
                 WardrobeItem.name,
+                WardrobeItem.clothing_type,
                 WardrobeItem.image_filename,
                 WardrobeItem.created_at,
             )
@@ -149,6 +150,7 @@ def edit_deposit_route(deposit_id):
             sa.orm.load_only(
                 WardrobeItem.id,
                 WardrobeItem.name,
+                WardrobeItem.clothing_type,
                 WardrobeItem.image_filename,
                 WardrobeItem.created_at,
             )
@@ -158,9 +160,18 @@ def edit_deposit_route(deposit_id):
     ).all()
 
     selected_item_ids = set()
+    remaining_item_keys = Counter(
+        (item.description, item.clothing_type)
+        for item in deposit.items
+    )
     remaining_item_names = Counter(item.description for item in deposit.items)
     for wardrobe_item in wardrobe_items:
-        if remaining_item_names[wardrobe_item.name] > 0:
+        item_key = (wardrobe_item.name, wardrobe_item.clothing_type)
+        if remaining_item_keys[item_key] > 0:
+            selected_item_ids.add(wardrobe_item.id)
+            remaining_item_keys[item_key] -= 1
+            remaining_item_names[wardrobe_item.name] -= 1
+        elif remaining_item_names[wardrobe_item.name] > 0:
             selected_item_ids.add(wardrobe_item.id)
             remaining_item_names[wardrobe_item.name] -= 1
 
@@ -293,9 +304,9 @@ def collect_deposit_route(deposit_id):
         flash("Access denied: Users only.", "danger")
         return redirect(url_for("index"))
 
-    if not is_collection_enabled():
+    if not is_collection_enabled_for_hostel(current_user.hostel_number):
         flash(
-            "Collection is currently closed. Please wait for staff to enable it.",
+            "Collection is currently closed for your hostel. Please wait for staff to enable it.",
             "warning",
         )
         return redirect(url_for("my_deposits"))

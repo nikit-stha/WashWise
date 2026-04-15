@@ -4,6 +4,53 @@
 {% block page_heading %}Staff dashboard{% endblock %}
 
 {% block content %}
+{% macro hostel_selector(selector_id, title, selected_codes=(), save_label=None, inline=false) %}
+<details class="staff-hostel-selector{% if inline %} is-inline{% endif %}" data-hostel-selector>
+    <summary class="staff-hostel-selector-trigger">
+        <span class="staff-hostel-selector-title">{{ title }}</span>
+        {% if not inline %}
+            <span class="staff-hostel-selector-summary" data-hostel-selector-summary hidden></span>
+        {% endif %}
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M6 9l6 6 6-6"/>
+        </svg>
+    </summary>
+
+    <div class="staff-hostel-selector-panel">
+        <div class="staff-hostel-selector-actions">
+            <button type="button" data-hostel-selector-select-all>Select all</button>
+            <button type="button" data-hostel-selector-clear>Clear</button>
+        </div>
+
+        <div class="staff-hostel-option-list">
+            {% for code, label in hostel_choices %}
+                <label class="staff-hostel-option" for="{{ selector_id }}-hostel-{{ code }}">
+                    <input
+                        id="{{ selector_id }}-hostel-{{ code }}"
+                        type="checkbox"
+                        name="hostel_codes"
+                        value="{{ code }}"
+                        data-hostel-selector-checkbox
+                        {% if code in selected_codes %}checked{% endif %}
+                    >
+                    <span class="staff-hostel-option-content">
+                        <span class="staff-hostel-option-code">{{ code }}</span>
+                        <span class="staff-hostel-option-name">{{ label.split(" ( ")[0] }}</span>
+                    </span>
+                </label>
+            {% endfor %}
+        </div>
+
+        {% if save_label %}
+            <div class="staff-hostel-selector-footer">
+                <button type="button" class="btn btn-small full-width staff-hostel-selector-cancel" data-hostel-selector-close>Cancel</button>
+                <button type="submit" class="btn btn-secondary full-width">{{ save_label }}</button>
+            </div>
+        {% endif %}
+    </div>
+</details>
+{% endmacro %}
+
 <div class="user-dashboard-page staff-dashboard-page">
     <section class="user-dashboard-panel">
         <div class="user-dashboard-panel-header">
@@ -40,17 +87,37 @@
                     <div class="staff-dashboard-control-copy">
                         <h3>Deposit Access</h3>
                         <p>Current status: <strong>{{ "OPEN" if settings.deposit_enabled else "CLOSED" }}</strong></p>
+                        {% if settings.deposit_enabled %}
+                            <p class="staff-dashboard-open-line">
+                                Open for
+                                <strong class="staff-dashboard-open-scope" title="{{ deposit_hostel_full_label }}">{{ deposit_hostel_label }}</strong>
+                            </p>
+                        {% endif %}
                     </div>
                     <span class="staff-dashboard-state {% if settings.deposit_enabled %}is-open{% else %}is-closed{% endif %}">
                         {{ "Open" if settings.deposit_enabled else "Closed" }}
                     </span>
                 </div>
 
-                <form method="POST" action="{{ url_for('toggle_deposit_route') }}">
-                    <button type="submit" class="btn auth-submit-btn full-width">
-                        {{ "Disable Deposits" if settings.deposit_enabled else "Enable Deposits" }}
-                    </button>
-                </form>
+                {% if settings.deposit_enabled %}
+                    <form method="POST" action="{{ url_for('update_deposit_hostels_route') }}" class="staff-dashboard-control-form">
+                        {{ hostel_selector("deposit-edit", "Edit hostels", deposit_hostel_codes, "Save hostels", true) }}
+                        <small class="staff-dashboard-form-help">Adjust which hostels can create deposits.</small>
+                        <small class="staff-dashboard-form-error" data-hostel-selector-error hidden>Select at least one hostel.</small>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('toggle_deposit_route') }}" class="staff-dashboard-control-form">
+                        <button type="submit" class="btn btn-danger full-width staff-dashboard-disable-btn">Disable Deposits</button>
+                    </form>
+                {% else %}
+                    <form method="POST" action="{{ url_for('toggle_deposit_route') }}" class="staff-dashboard-control-form">
+                        {{ hostel_selector("deposit-open", "Open deposits for") }}
+                        <small class="staff-dashboard-form-help">Choose every hostel that should see deposit access.</small>
+                        <small class="staff-dashboard-form-error" data-hostel-selector-error hidden>Select at least one hostel.</small>
+
+                        <button type="submit" class="btn auth-submit-btn full-width">Enable Deposits</button>
+                    </form>
+                {% endif %}
             </article>
 
             <article class="staff-dashboard-control-card">
@@ -58,19 +125,144 @@
                     <div class="staff-dashboard-control-copy">
                         <h3>Collection Access</h3>
                         <p>Current status: <strong>{{ "OPEN" if settings.collection_enabled else "CLOSED" }}</strong></p>
+                        {% if settings.collection_enabled %}
+                            <p class="staff-dashboard-open-line">
+                                Open for
+                                <strong class="staff-dashboard-open-scope" title="{{ collection_hostel_full_label }}">{{ collection_hostel_label }}</strong>
+                            </p>
+                        {% endif %}
                     </div>
                     <span class="staff-dashboard-state {% if settings.collection_enabled %}is-open{% else %}is-closed{% endif %}">
                         {{ "Open" if settings.collection_enabled else "Closed" }}
                     </span>
                 </div>
 
-                <form method="POST" action="{{ url_for('toggle_collection_route') }}">
-                    <button type="submit" class="btn auth-submit-btn full-width">
-                        {{ "Disable Collection" if settings.collection_enabled else "Enable Collection" }}
-                    </button>
-                </form>
+                {% if settings.collection_enabled %}
+                    <form method="POST" action="{{ url_for('update_collection_hostels_route') }}" class="staff-dashboard-control-form">
+                        {{ hostel_selector("collection-edit", "Edit hostels", collection_hostel_codes, "Save hostels", true) }}
+                        <small class="staff-dashboard-form-help">Adjust which hostels can collect laundry.</small>
+                        <small class="staff-dashboard-form-error" data-hostel-selector-error hidden>Select at least one hostel.</small>
+                    </form>
+
+                    <form method="POST" action="{{ url_for('toggle_collection_route') }}" class="staff-dashboard-control-form">
+                        <button type="submit" class="btn btn-danger full-width staff-dashboard-disable-btn">Disable Collection</button>
+                    </form>
+                {% else %}
+                    <form method="POST" action="{{ url_for('toggle_collection_route') }}" class="staff-dashboard-control-form">
+                        {{ hostel_selector("collection-open", "Open collection for") }}
+                        <small class="staff-dashboard-form-help">Choose every hostel that should see collection access.</small>
+                        <small class="staff-dashboard-form-error" data-hostel-selector-error hidden>Select at least one hostel.</small>
+
+                        <button type="submit" class="btn auth-submit-btn full-width">Enable Collection</button>
+                    </form>
+                {% endif %}
             </article>
         </div>
     </section>
 </div>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const selectors = document.querySelectorAll("[data-hostel-selector]");
+
+    function updateSelector(selector) {
+        const checkboxes = selector.querySelectorAll("[data-hostel-selector-checkbox]");
+        const summary = selector.querySelector("[data-hostel-selector-summary]");
+        const form = selector.closest("form");
+        const error = form ? form.querySelector("[data-hostel-selector-error]") : null;
+        const selectedCount = Array.from(checkboxes).filter(function (checkbox) {
+            return checkbox.checked;
+        }).length;
+
+        if (summary) {
+            if (selectedCount === 0) {
+                summary.textContent = "";
+                summary.hidden = true;
+            } else if (selectedCount === checkboxes.length) {
+                summary.textContent = "All hostels";
+                summary.hidden = false;
+            } else if (selectedCount === 1) {
+                summary.textContent = "1 hostel selected";
+                summary.hidden = false;
+            } else {
+                summary.textContent = `${selectedCount} hostels selected`;
+                summary.hidden = false;
+            }
+        }
+
+        if (selectedCount > 0) {
+            selector.classList.remove("has-error");
+            if (error) {
+                error.hidden = true;
+            }
+        }
+    }
+
+    selectors.forEach(function (selector) {
+        const checkboxes = selector.querySelectorAll("[data-hostel-selector-checkbox]");
+        const selectAll = selector.querySelector("[data-hostel-selector-select-all]");
+        const clear = selector.querySelector("[data-hostel-selector-clear]");
+        const close = selector.querySelector("[data-hostel-selector-close]");
+        const form = selector.closest("form");
+        const error = form ? form.querySelector("[data-hostel-selector-error]") : null;
+
+        checkboxes.forEach(function (checkbox) {
+            checkbox.addEventListener("change", function () {
+                updateSelector(selector);
+            });
+        });
+
+        if (selectAll) {
+            selectAll.addEventListener("click", function () {
+                checkboxes.forEach(function (checkbox) {
+                    checkbox.checked = true;
+                });
+                updateSelector(selector);
+            });
+        }
+
+        if (clear) {
+            clear.addEventListener("click", function () {
+                checkboxes.forEach(function (checkbox) {
+                    checkbox.checked = false;
+                });
+                updateSelector(selector);
+            });
+        }
+
+        if (close) {
+            close.addEventListener("click", function () {
+                selector.open = false;
+            });
+        }
+
+        if (form) {
+            form.addEventListener("submit", function (event) {
+                const hasSelection = Array.from(checkboxes).some(function (checkbox) {
+                    return checkbox.checked;
+                });
+
+                if (!hasSelection) {
+                    event.preventDefault();
+                    selector.classList.add("has-error");
+                    selector.open = true;
+                    if (error) {
+                        error.hidden = false;
+                    }
+                }
+            });
+        }
+
+        updateSelector(selector);
+    });
+
+    document.addEventListener("click", function (event) {
+        selectors.forEach(function (selector) {
+            if (!selector.classList.contains("is-inline") && !selector.contains(event.target)) {
+                selector.open = false;
+            }
+        });
+    });
+});
+</script>
 {% endblock %}

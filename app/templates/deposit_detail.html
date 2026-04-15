@@ -67,6 +67,7 @@
                             <div class="img-placeholder">No image</div>
                         {% endif %}
                         <div class="item-card-body">
+                            <span class="clothing-type-pill">{{ item.clothing_type or "Type not set" }}</span>
                             <p class="item-name">{{ item.description }}</p>
                         </div>
                     </div>
