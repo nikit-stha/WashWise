@@ -179,3 +179,5 @@ No dedicated automated test suite is currently included.
 ## License
 
 Add a license before publishing if this project will be shared publicly.
+
+- By WashWise Team
