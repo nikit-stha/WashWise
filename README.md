@@ -6,15 +6,15 @@ WashWise is a Flask-based hostel laundry management system for students and laun
 
 - Student and staff registration/login flows.
 - Email OTP verification for new accounts.
-- Password reset emails for students and staff
-- Student wardrobe with image uploads and browser-side image optimization
-- Laundry deposit creation from wardrobe items
-- Active-deposit restriction: one open deposit per student until collection
-- Deposit status tracking: `Not Given`, `Processing`, `Completed`, `Collected`
-- Staff dashboard controls for opening/closing deposits and collections
-- User dashboard notification bell for deposit/collection availability and completed laundry
-- Staff deposit search and status filtering
-- QR code generation and scan endpoints for completed deposits
+- Password reset emails for students and staff.
+- Student wardrobe with image uploads and browser-side image optimization.
+- Laundry deposit creation from wardrobe items.
+- Active-deposit restriction: one open deposit per student until collection.
+- Deposit status tracking: `Not Given`, `Processing`, `Completed`, `Collected`.
+- Staff dashboard controls for opening/closing deposits and collections.
+- User dashboard notification bell for deposit/collection availability and completed laundry.
+- Staff deposit search and status filtering.
+- QR code generation and scan endpoints for completed deposits.
 - Light/dark theme support
 
 ## Tech Stack
