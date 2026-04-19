@@ -19,9 +19,9 @@ WashWise is a Flask-based hostel laundry management system for students and laun
 
 ## Tech Stack
 
-- Python
-- Flask
-- Flask-SQLAlchemy
+- Python.
+- Flask.
+- Flask-SQLAlchemy.
 - Flask-Login
 - Flask-WTF / WTForms
 - Flask-Mail
