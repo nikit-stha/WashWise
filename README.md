@@ -4,7 +4,7 @@ WashWise is a Flask-based hostel laundry management system for students and laun
 
 ## Features
 
-- Student and staff registration/login flows
+- Student and staff registration/login flows.
 - Email OTP verification for new accounts.
 - Password reset emails for students and staff.
 - Student wardrobe with image uploads and browser-side image optimization.
